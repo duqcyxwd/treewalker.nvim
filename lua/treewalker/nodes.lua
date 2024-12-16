@@ -4,6 +4,7 @@ local lines= require "treewalker.lines"
 local NON_TARGET_NODE_MATCHERS = {
   -- "chunk", -- lua
   "^.*comment.*$",
+  "block"
 }
 
 local TARGET_DESCENDANT_TYPES = {

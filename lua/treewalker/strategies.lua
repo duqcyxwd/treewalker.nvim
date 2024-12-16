@@ -185,7 +185,7 @@ function M.get_current_top_node()
     local parent_start_row, parent_start_col = parent:range()
 
     -- If the node does not start at the same position as its parent, return the node
-    if start_row ~= parent_start_row or start_col ~= parent_start_col then
+    if start_row ~= parent_start_row or start_col ~= parent_start_col or not nodes.is_jump_target(parent) then
         return node
     end
 
