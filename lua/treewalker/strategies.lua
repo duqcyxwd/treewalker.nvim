@@ -2,6 +2,9 @@ local lines = require('treewalker.lines')
 local nodes = require('treewalker.nodes')
 local util  = require('treewalker.util')
 
+local parsers = require "nvim-treesitter.parsers"
+local ts_utils = require 'nvim-treesitter.ts_utils'
+
 ---@alias Dir "up" | "down"
 
 -- Take row, give next row / node with same indentation
@@ -151,6 +154,55 @@ function M.get_prev_if_on_empty_line(start_row, start_line)
   if current_row < 0 then return end
 
   return current_node, current_row, current_line
+end
+
+
+--- Retrieves the topmost tree-sitter node under the current cursor position.
+-- The top node is determined by traversing the AST (abstract syntax tree) upwards
+-- from the node under the cursor position, stopping at the first ancestor node
+-- which does not begin at the same position as its own parent. This recursion
+-- is limited by a predefined maximum depth.
+--
+-- @return top_node, row, col
+--   - `top_node`: the topmost tree-sitter Node, or `nil` if no node is found.
+--   - `row`: the starting row index of the top node.
+--   - `col`: the starting column index of the top node.
+function M.get_current_top_node()
+
+  local function search_parent(node, depth)
+    -- Stop recursion if node is nil or max depth is reached
+    if not node or depth <= 0 then
+      return node
+    end
+
+    local parent = node:parent()
+
+    if not parent then
+      return node
+    end
+
+    local start_row, start_col = node:range()
+    local parent_start_row, parent_start_col = parent:range()
+
+    -- If the node does not start at the same position as its parent, return the node
+    if start_row ~= parent_start_row or start_col ~= parent_start_col then
+        return node
+    end
+
+    -- If it does start at the same position, recurse with reduced depth
+    return search_parent(parent, depth - 1)
+  end
+
+  local node = ts_utils.get_node_at_cursor(0)
+
+  if not node then
+    return nil
+  end
+
+  local top_node =  search_parent(node, 100)
+
+  local row, col = top_node:range()
+  return top_node, row, col
 end
 
 return M
