@@ -2,9 +2,6 @@ local lines = require('treewalker.lines')
 local nodes = require('treewalker.nodes')
 local util  = require('treewalker.util')
 
-local parsers = require "nvim-treesitter.parsers"
-local ts_utils = require 'nvim-treesitter.ts_utils'
-
 ---@alias Dir "up" | "down"
 
 -- Take row, give next row / node with same indentation
@@ -193,7 +190,7 @@ function M.get_current_top_node()
     return search_parent(parent, depth - 1)
   end
 
-  local node = ts_utils.get_node_at_cursor(0)
+  local node = vim.treesitter.get_node()
 
   if not node then
     return nil
